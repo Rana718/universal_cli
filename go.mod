@@ -1,4 +1,4 @@
-module universal_cli
+module gos
 
 go 1.22.6
 
