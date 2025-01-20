@@ -5,8 +5,8 @@ package cmd
 
 import (
 	"fmt"
+	"gos/cmd/helper"
 	"gos/cmd/utils"
-	"os"
 	"os/exec"
 
 	"github.com/spf13/cobra"
@@ -29,37 +29,14 @@ var exCmd = &cobra.Command{
 		paths, _ := cmd.Flags().GetString("path")
 		loadedPaths := utils.LoadPaths()
 
-		var finalPath string
+		finalPath, err := helper.ResolvePath(paths, args, loadedPaths)
 
-		if paths != "" {
-			path, exists := loadedPaths[paths]
-
-			if !exists {
-				fmt.Println("Error: No path found for name ", paths)
-				return
-			} else {
-				finalPath = path
-			}
-
-		} else if len(args) > 0 {
-			path := args[0]
-
-			if path == "." {
-				currentDir, err := os.Getwd()
-				if err != nil {
-					fmt.Println("Error: ", err)
-					return
-				}
-				finalPath = currentDir
-			} else {
-				finalPath = path
-			}
-		} else {
-			fmt.Println("Error: Either provide a path as an argument or use the -p flag.")
+		if err != nil {
+			fmt.Println("Error: ", err)
 			return
 		}
 
-		err := exec.Command("explorer", finalPath).Run()
+		err = exec.Command("explorer", finalPath).Run()
 		if err != nil {
 			if exitError, ok := err.(*exec.ExitError); ok && exitError.ExitCode() == 1 {
 				fmt.Println("Path opened in Explorer: ", finalPath)
@@ -82,37 +59,14 @@ var vsCmd = &cobra.Command{
 		paths, _ := cmd.Flags().GetString("path")
 		loadedPaths := utils.LoadPaths()
 
-		var finalPath string
+		finalPath, err := helper.ResolvePath(paths, args, loadedPaths)
 
-		if paths != "" {
-			path, exists := loadedPaths[paths]
-
-			if !exists {
-				fmt.Println("Error: No path found for name ", paths)
-				return
-			} else {
-				finalPath = path
-			}
-
-		} else if len(args) > 0 {
-			path := args[0]
-
-			if path == "." {
-				currentDir, err := os.Getwd()
-				if err != nil {
-					fmt.Println("Error: ", err)
-					return
-				}
-				finalPath = currentDir
-			} else {
-				finalPath = path
-			}
-		} else {
-			fmt.Println("Error: Either provide a path as an argument or use the -p flag.")
+		if err != nil {
+			fmt.Println("Error: ", err)
 			return
 		}
 
-		err := exec.Command("code", finalPath).Run()
+		err = exec.Command("code", finalPath).Run()
 
 		if err != nil {
 			if exitError, ok := err.(*exec.ExitError); ok && exitError.ExitCode() == 1 {
