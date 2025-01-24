@@ -5,12 +5,13 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"gos/cmd/utils"
-	
+	"sort"
+
+	"github.com/spf13/cobra"
 )
 
-// addPathCmd represents the addPath command
+
 var addPathCmd = &cobra.Command{
 	Use:   "addPath [name] [path]",
 	Short: "Add a path to the JSON file with a custom name",
@@ -22,7 +23,7 @@ var addPathCmd = &cobra.Command{
 		paths := utils.LoadPaths()
 		paths[name] = path
 
-		if err := utils.SavedPaths(paths); err != nil{
+		if err := utils.SavedPaths(paths); err != nil {
 			fmt.Println("Error :", err)
 			return
 		}
@@ -37,6 +38,20 @@ var getCmd = &cobra.Command{
 	Long:  `Retrieve the path associated with a given name stored in the JSON file.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		paths := utils.LoadPaths()
+		
+		if pathName == "" {
+			names := make([]string, 0, len(paths))
+			for name := range paths {
+				names = append(names, name)
+			}
+			sort.Strings(names)
+			fmt.Println("Stored paths:")
+			for _, name := range names {
+				fmt.Printf("  %s: %s\n", name, paths[name])
+			}
+			return
+		}
+		
 		path, exists := paths[pathName]
 		if !exists {
 			fmt.Printf("No path found for name '%s'.\n", pathName)
@@ -46,19 +61,37 @@ var getCmd = &cobra.Command{
 	},
 }
 
+var remCmd = &cobra.Command{
+	Use:   "rem",
+	Short: "Remove the path associated with the given name",
+	Long:  `Remove the path associated with a given name stored in the JSON file.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 0 {
+			fmt.Println("Please provide a name to remove")
+			return
+		}
+		name := args[0]
+		paths := utils.LoadPaths()
+		_, exists := paths[name]
+		if !exists {
+			fmt.Printf("No path found for name '%s'.\n", name)
+			return
+		}
+
+		delete(paths, name)
+
+		if err := utils.SavedPaths(paths); err != nil {
+			fmt.Println("Error :", err)
+			return
+		}
+
+		fmt.Printf("Path '%s' removed.\n", name)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(addPathCmd)
 	rootCmd.AddCommand(getCmd)
+	rootCmd.AddCommand(remCmd)
 	getCmd.Flags().StringVarP(&pathName, "path", "p", "", "Name of the stored path")
-	getCmd.MarkFlagRequired("path")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// addPathCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// addPathCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
