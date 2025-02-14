@@ -1,6 +1,3 @@
-/*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -20,7 +17,6 @@ func init() {
 
 }
 
-// exCmd represents the ex command
 var exCmd = &cobra.Command{
 	Use:   "ex",
 	Short: "Open the path in Explorer",
